@@ -1,0 +1,116 @@
+{
+	"geode": "4.6.0",
+	"gd": {
+		"win": "2.208"
+	},
+	"id": "keithsweater20.optimizer",
+	"name": "FPS Optimizer",
+	"version": "v0.1.0",
+	"developer": "keithsweater20",
+	"description": "FPS cap with min/max/target, adaptive savings, experimental Force FPS and Extreme mode, and a fake FPS display.",
+	"settings": {
+		"fps-title": {
+			"type": "title",
+			"name": "Frame rate"
+		},
+		"max-fps": {
+			"type": "int",
+			"name": "Max FPS",
+			"description": "Frame cap. 0, or anything at or above 100000, means no cap. Stored as a signed 32-bit value, so the largest allowed number is 2147483647.",
+			"default": 240,
+			"min": 0,
+			"max": 2147483647,
+			"control": { "input": true, "arrows": false, "slider": false }
+		},
+		"min-fps": {
+			"type": "int",
+			"name": "Min FPS",
+			"description": "The floor the adaptive optimizer defends. If FPS drops below it, more savings switch on. 0 means no floor (the target is used instead).",
+			"default": 0,
+			"min": 0,
+			"max": 2147483647,
+			"control": { "input": true, "arrows": false, "slider": false }
+		},
+		"target-fps": {
+			"type": "int",
+			"name": "Target FPS",
+			"description": "What the adaptive optimizer aims for when Min FPS is 0.",
+			"default": 120,
+			"min": 1,
+			"max": 2147483647,
+			"control": { "input": true, "arrows": false, "slider": false }
+		},
+		"adaptive": {
+			"type": "bool",
+			"name": "Adaptive optimization",
+			"description": "Switch savings on when FPS drops below the floor, and ease them off again when there is headroom.",
+			"default": true
+		},
+		"savings-title": {
+			"type": "title",
+			"name": "Manual savings"
+		},
+		"disable-particles": {
+			"type": "bool",
+			"name": "Disable particles",
+			"description": "Skip drawing all particle effects. Large gain on integrated GPUs in effect-heavy levels.",
+			"default": false
+		},
+		"disable-trails": {
+			"type": "bool",
+			"name": "Disable trails",
+			"description": "Skip drawing motion-streak trails (icon trails). Wave trails are not covered yet.",
+			"default": false
+		},
+		"experimental-title": {
+			"type": "title",
+			"name": "Experimental"
+		},
+		"force-fps": {
+			"type": "bool",
+			"name": "Force FPS (experimental)",
+			"description": "Applies the strongest savings immediately and keeps them on. Shows 5 warnings before it turns on. Always switches itself off again when the game starts.",
+			"default": false
+		},
+		"extreme-mode": {
+			"type": "bool",
+			"name": "Extreme mode (experimental)",
+			"description": "Only does anything while Force FPS is on. Removes the FPS cap and applies every implemented saving at once.",
+			"default": false
+		},
+		"jump-improvement": {
+			"type": "bool",
+			"name": "Jump improvement (placeholder)",
+			"description": "Reserved for an input-responsiveness feature. It does nothing yet.",
+			"default": false
+		},
+		"display-title": {
+			"type": "title",
+			"name": "Overlay"
+		},
+		"show-overlay": {
+			"type": "bool",
+			"name": "Show FPS overlay",
+			"description": "Shows FPS, frame time and the current savings level in levels.",
+			"default": true
+		},
+		"fake-fps": {
+			"type": "bool",
+			"name": "Fake FPS display",
+			"description": "Shows custom text instead of the real number. Display only: it never changes your real FPS or what the optimizer uses.",
+			"default": false
+		},
+		"fake-fps-text": {
+			"type": "string",
+			"name": "Fake FPS text",
+			"description": "What to show. Presets: eps0, omega, knux, inf, 9001, NaN. Any other text is shown as typed. Game fonts lack some Greek symbols, so the presets use plain letters.",
+			"default": "omega"
+		},
+		"fake-fps-tag": {
+			"type": "bool",
+			"name": "Add \"(fake)\" tag",
+			"description": "Appends a small (fake) tag so screenshots and recordings are not misleading.",
+			"default": true
+		}
+	}
+}
