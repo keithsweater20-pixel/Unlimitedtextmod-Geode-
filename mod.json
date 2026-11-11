@@ -5,7 +5,7 @@
 	},
 	"id": "keithsweater20.special-characters",
 	"name": "Special Characters",
-	"version": "v0.1.1",
+	"version": "v0.1.2",
 	"developer": "keithsweater20",
 	"description": "Type ε₀, ℵ₀, ω, Ω and other Greek/math symbols in Geometry Dash text fields using short codes like \\e0, \\a0, \\w and \\W.",
 	"settings": {

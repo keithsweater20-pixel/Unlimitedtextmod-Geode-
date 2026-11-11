@@ -146,8 +146,10 @@ class $modify(SCTextInput, CCTextInputNode) {
 			return CCTextInputNode::onTextFieldInsertText(sender, text, len, key);
 		}
 
-		// 1. This keystroke (or paste) completes a code: put the symbol in ourselves.
-		if (m_textField && m_textField->m_pInputText) {
+		// 1. A single keystroke that completes a code: put the symbol in ourselves.
+		//    Pastes (len > 1) skip this, since rewriting the whole field would move
+		//    the text around. Codes in pasted text are not converted.
+		if (len == 1 && m_textField && m_textField->m_pInputText) {
 			std::string typed(text, static_cast<size_t>(len));
 			std::string combined = std::string(m_textField->m_pInputText->c_str()) + typed;
 			bool changed = false;

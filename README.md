@@ -1,4 +1,4 @@
-# Special Characters (Geode mod, v0.1.1)
+# Special Characters (Geode mod, v0.1.2)
 
 Type ε₀, ℵ₀, ω, Ω and other Greek/math symbols in Geometry Dash text fields.
 Target: Geometry Dash 2.2081, Windows, Geode 5.11.2.
@@ -22,10 +22,10 @@ More codes are one line each in `kCodes` in `main.cpp`. The prefix (default `\`)
 
 ## What works
 
-- **Typing:** a backslash plus a code is swapped for the symbol as soon as the code is complete. Unit-tested without the game.
+- **Typing:** a backslash plus a code is swapped for the symbol as soon as the code is complete. Only single keystrokes are converted, so pasting does not change text. Codes are always added at the end of the field, not at the cursor, so mid-text typing may still misplace the symbol. Unit-tested without the game.
 - **Showing:** not working yet. Symbols are typed correctly but GD's fonts have no glyph for them, so they may appear as boxes or be missing.
 
-v0.1.0 tried to draw symbols with a bundled fallback font by swapping the label's font file. That crashed GD on startup (`CCLabelBMFont::setFntFile` during label creation), so v0.1.1 removes it.
+v0.1.0 tried to draw symbols with a bundled fallback font by swapping the label's font file. That crashed GD on startup (`CCLabelBMFont::setFntFile` during label creation), so v0.1.2 removes it.
 
 ## Known limits
 
