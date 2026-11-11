@@ -14,13 +14,14 @@ jobs:
       - uses: actions/checkout@v7
 
       # GD 2.2081 is what Geode v5.11.2 targets. The SDK version comes from
-      # mod.json ("geode": "5.11.2"). The bindings are pinned to the last commit
-      # before the 2.2091 update, because bindings main no longer matches v5.x.
+      # mod.json ("geode": "5.11.2"). The bindings are pinned to the commit that
+      # was current when v5.11.2 was released (2026-10-16). The later 2.2091 work
+      # in bindings changed the code generator and no longer matches the v5.x SDK.
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
         with:
           bindings: geode-sdk/bindings
-          bindings-ref: 7407717c307d1cd94461786210b330ab868f4260
+          bindings-ref: 1605f500d053f8de122bf5c7dc6d17c24866e02e
           combine: true
 
   package:
