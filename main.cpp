@@ -8,14 +8,12 @@
 //   1. Typing: GD text fields only accept the characters on their allow list, so
 //      you type a short code (backslash + e0, w, ...) and the mod swaps in the
 //      real UTF-8 symbol.
-//   2. Showing: GD's bitmap fonts have no Greek/math glyphs, so any label that
-//      contains one is switched to a bundled fallback font (specialFont.fnt).
+//   2. Showing: not done in v0.1.1. Swapping the label font crashed GD on
+//      startup (see README), so symbols typed here are not drawn by GD's fonts yet.
 
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CCTextInputNode.hpp>
-#include <Geode/modify/CCLabelBMFont.hpp>
 
-#include <atomic>
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
@@ -133,19 +131,7 @@ namespace sc {
 		return path;
 	}
 
-	inline std::atomic<bool> g_swapFont{true};
-
 } // namespace sc
-
-$on_mod(Loaded) {
-	sc::g_swapFont = Mod::get()->getSettingValue<bool>("swap-font");
-}
-
-$execute {
-	listenForSettingChanges<bool>("swap-font", [](bool value) {
-		sc::g_swapFont = value;
-	});
-}
 
 // ---------------------------------------------------------------- typing ----
 
@@ -191,35 +177,5 @@ class $modify(SCTextInput, CCTextInputNode) {
 		}
 
 		return CCTextInputNode::onTextFieldInsertText(sender, text, len, key);
-	}
-};
-
-// --------------------------------------------------------------- showing ----
-
-class $modify(SCLabel, CCLabelBMFont) {
-	struct Fields {
-		std::string originalFont; // set while this label is on the fallback font
-	};
-
-	void setString(char const* str, bool fromUpdate) {
-		if (sc::g_swapFont.load(std::memory_order_relaxed)) {
-			auto const& fallback = sc::fontPath();
-			if (!fallback.empty()) {
-				bool special = sc::hasSpecial(str);
-				bool onFallback = fallback == m_sFntFile.c_str();
-				// m_fields is only touched for labels that actually need the swap,
-				// so ordinary labels don't pay for it.
-				if (special && !onFallback) {
-					m_fields->originalFont = m_sFntFile.c_str();
-					this->setFntFile(fallback.c_str());
-				}
-				else if (!special && onFallback && !m_fields->originalFont.empty()) {
-					std::string original = m_fields->originalFont;
-					m_fields->originalFont.clear();
-					this->setFntFile(original.c_str());
-				}
-			}
-		}
-		CCLabelBMFont::setString(str, fromUpdate);
 	}
 };

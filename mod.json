@@ -5,15 +5,9 @@
 	},
 	"id": "keithsweater20.special-characters",
 	"name": "Special Characters",
-	"version": "v0.1.0",
+	"version": "v0.1.1",
 	"developer": "keithsweater20",
-	"description": "Type ε₀, ℵ₀, ω, Ω and other Greek/math symbols in Geometry Dash text fields using short codes like \\e0, \\a0, \\w and \\W, and have them display correctly.",
-	"resources": {
-		"files": [
-			"resources/specialFont.fnt",
-			"resources/specialFont.png"
-		]
-	},
+	"description": "Type ε₀, ℵ₀, ω, Ω and other Greek/math symbols in Geometry Dash text fields using short codes like \\e0, \\a0, \\w and \\W.",
 	"settings": {
 		"enable-codes": {
 			"type": "bool",
@@ -26,12 +20,6 @@
 			"name": "Code prefix",
 			"description": "The character(s) you type before a code. Default is a backslash.",
 			"default": "\\"
-		},
-		"swap-font": {
-			"type": "bool",
-			"name": "Show the symbols",
-			"description": "Geometry Dash's own fonts have no Greek or math symbols, so any label that contains one is drawn with a built-in fallback font (a different look from the normal font). Turn this off and the symbols will be invisible.",
-			"default": true
 		}
 	}
 }

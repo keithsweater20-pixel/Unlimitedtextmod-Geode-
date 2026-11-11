@@ -1,4 +1,4 @@
-# Special Characters (Geode mod, v0.1.0)
+# Special Characters (Geode mod, v0.1.1)
 
 Type ε₀, ℵ₀, ω, Ω and other Greek/math symbols in Geometry Dash text fields.
 Target: Geometry Dash 2.2081, Windows, Geode 5.11.2.
@@ -20,16 +20,18 @@ Type a backslash followed by a code. The code turns into the symbol as soon as i
 
 More codes are one line each in `kCodes` in `main.cpp`. The prefix (default `\`) can be changed in the mod settings.
 
-## Why two halves
+## What works
 
-1. **Typing.** GD text fields only accept characters on an allow list, so the symbols can't be typed directly. The mod watches what you type and swaps a finished code for the real symbol. In fields that clearly take text, it also lets the backslash through.
-2. **Showing.** GD's fonts contain no Greek or math glyphs, so a symbol would simply be invisible. Any label containing one of the supported symbols is drawn with a bundled fallback font (`specialFont`, made from DejaVu Sans Bold). Labels without symbols are untouched.
+- **Typing:** a backslash plus a code is swapped for the symbol as soon as the code is complete. Unit-tested without the game.
+- **Showing:** not working yet. Symbols are typed correctly but GD's fonts have no glyph for them, so they may appear as boxes or be missing.
+
+v0.1.0 tried to draw symbols with a bundled fallback font by swapping the label's font file. That crashed GD on startup (`CCLabelBMFont::setFntFile` during label creation), so v0.1.1 removes it.
 
 ## Known limits
 
-- **The fallback font looks different** from GD's own fonts (different style, and the size may be a bit off). A label containing a symbol is drawn entirely in the fallback font. I couldn't tune the size without the game. To try another size: `python3 tools/make_font.py "" 28` (needs Pillow and the DejaVu font).
+- Symbols are not drawn yet (see above).
 - Only fields that already accept letters and numbers get the backslash; number-only fields (like ID boxes) are left alone.
-- Level text objects and fields that go through GD's normal text input and label code should work. Anything GD draws some other way (for example text baked into a sprite) won't.
+- Fields that go through GD's normal text input and label code should work. Anything GD draws some other way (for example text baked into a sprite) won't.
 - Symbols other than the ones listed are not in the fallback font.
 
 ## Build
