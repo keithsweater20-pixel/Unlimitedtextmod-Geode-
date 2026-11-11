@@ -22,6 +22,10 @@ jobs:
         with:
           bindings: geode-sdk/bindings
           bindings-ref: 1605f500d053f8de122bf5c7dc6d17c24866e02e
+          # Build codegen from the pinned source. Without this the CMake downloads the
+          # newest prebuilt codegen, which emits Geode/mapping/ headers that SDK 5.11.2
+          # does not have.
+          configure-args: "-DSKIP_BUILDING_CODEGEN=OFF"
           combine: true
 
   package:
