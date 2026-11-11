@@ -1,0 +1,11 @@
+{
+	"geode": "5.11.2",
+	"gd": {
+		"win": "2.2081"
+	},
+	"id": "keithsweater20.songselect-guard",
+	"name": "Song Select Guard",
+	"version": "v0.1.0",
+	"developer": "keithsweater20",
+	"description": "Stops the song select crash (null ButtonSprite in SongSelectNode::onSongMode) by skipping the call when a required button or widget is missing."
+}
