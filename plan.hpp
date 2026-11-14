@@ -107,14 +107,14 @@ inline Num finite(Big b) {
 	n.v = std::move(b);
 	return n;
 }
-inline Num small(uint64_t v) { return finite(fromU64(v)); }
+inline Num smallNum(uint64_t v) { return finite(fromU64(v)); }
 
 inline Num nAdd(Num const& a, Num const& b) {
 	if (a.inf || b.inf) return infinite();
 	return finite(add(a.v, b.v));
 }
 inline Num nMul(Num const& a, Num const& b) {
-	if ((!a.inf && isZero(a.v)) || (!b.inf && isZero(b.v))) return small(0);
+	if ((!a.inf && isZero(a.v)) || (!b.inf && isZero(b.v))) return smallNum(0);
 	if (a.inf || b.inf) return infinite();
 	return finite(mul(a.v, b.v));
 }
@@ -125,13 +125,13 @@ inline bool isVal(Num const& a, uint64_t v) {
 
 // a ^ e
 inline Num nPow(Num const& a, Num const& e) {
-	if (isVal(e, 0)) return small(1);
-	if (isVal(a, 0)) return small(0);
-	if (isVal(a, 1)) return small(1);
+	if (isVal(e, 0)) return smallNum(1);
+	if (isVal(a, 0)) return smallNum(0);
+	if (isVal(a, 1)) return smallNum(1);
 	if (a.inf || e.inf) return infinite();
 	uint64_t ev;
 	if (!toU64(e.v, ev) || ev >= kCapBits) return infinite(); // a >= 2 here, so 2^496 is already too big
-	Num result = small(1), base = a;
+	Num result = smallNum(1), base = a;
 	while (ev) {
 		if (ev & 1) {
 			result = nMul(result, base);
@@ -149,11 +149,11 @@ inline Num nPow(Num const& a, Num const& e) {
 // a (n up-arrows) b  :  n=1 is a^b, n=2 is a^^b (a tower of b copies of a), and so on
 inline Num hyper(Num const& a, int n, Num const& b) {
 	if (n <= 1) return nPow(a, b);
-	if (isVal(b, 0)) return small(1);
-	if (isVal(a, 1)) return small(1);
+	if (isVal(b, 0)) return smallNum(1);
+	if (isVal(a, 1)) return smallNum(1);
 	if (isVal(a, 0)) {
 		uint64_t bv;
-		return (toU64(b.v, bv) && !b.inf && (bv & 1)) ? small(0) : small(1);
+		return (toU64(b.v, bv) && !b.inf && (bv & 1)) ? smallNum(0) : smallNum(1);
 	}
 	if (a.inf) return infinite();
 	if (b.inf) return infinite();
@@ -236,13 +236,13 @@ private:
 		skip();
 		if (i_ >= s_.size()) {
 			fail("Something is missing at the end");
-			return small(0);
+			return smallNum(0);
 		}
 		char c = s_[i_];
 		if (c == '(') {
 			if (++depth_ > 20) {
 				fail("Too many brackets");
-				return small(0);
+				return smallNum(0);
 			}
 			++i_;
 			Num v = expr();
@@ -259,7 +259,7 @@ private:
 			while (i_ < s_.size() && std::isdigit(static_cast<unsigned char>(s_[i_]))) {
 				if (++digits > 300) {
 					fail("That number is too long");
-					return small(0);
+					return smallNum(0);
 				}
 				v = add(mul(v, ten), fromU64(static_cast<uint64_t>(s_[i_] - '0')));
 				++i_;
@@ -274,10 +274,10 @@ private:
 			}
 			if (name == "e_0" || name == "l_w" || name == "a_n" || name == "o_w") return infinite();
 			fail("Unknown name '" + name + "'. Use E_0, l_w, a_n or O_w");
-			return small(0);
+			return smallNum(0);
 		}
 		fail(std::string("Unexpected '") + c + "'");
-		return small(0);
+		return smallNum(0);
 	}
 };
 
