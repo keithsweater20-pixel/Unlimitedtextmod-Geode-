@@ -3,23 +3,9 @@
 	"gd": {
 		"win": "2.2081"
 	},
-	"id": "keithsweater20.special-characters",
-	"name": "Special Characters",
-	"version": "v0.1.2",
+	"id": "keithsweater20.press-limit",
+	"name": "Press Limit",
+	"version": "v0.1.0",
 	"developer": "keithsweater20",
-	"description": "Type ε₀, ℵ₀, ω, Ω and other Greek/math symbols in Geometry Dash text fields using short codes like \\e0, \\a0, \\w and \\W.",
-	"settings": {
-		"enable-codes": {
-			"type": "bool",
-			"name": "Enable typing codes",
-			"description": "Typing the prefix followed by a code (for example \\e0) turns it into the symbol. Codes: e0 or eps0 = ε₀, a0 or aleph0 = ℵ₀, w = ω, W = Ω, alpha beta gamma delta theta lambda mu pi sigma phi = Greek letters, inf = ∞.",
-			"default": true
-		},
-		"prefix": {
-			"type": "string",
-			"name": "Code prefix",
-			"description": "The character(s) you type before a code. Default is a backslash.",
-			"default": "\\"
-		}
-	}
+	"description": "Editor button that makes a block and triggers: the block disappears after you press a number of times. Type 100, E_0, l_w, a_n, O_w or Knuth arrows (^). Big numbers use a chain of 32-bit counters."
 }

@@ -1,183 +1,110 @@
-// Special Characters v0.1.0 for Geode (GD 2.2081, Windows)
+// Press Limit for Geode (GD 2.2081, Windows)
 //
-// NOTE: written without being able to compile against the Geode SDK. Hook
-// signatures were checked against the 2.2081 bindings by reading them, but if
-// the compiler complains, fix the signature to match your SDK's headers.
+// In the level editor a new "Limit" button opens a box. Type how many presses you want
+// (a number, or E_0, l_w, a_n, O_w, ^ for Knuth arrows, + * and brackets) and the mod places
+// a block plus the triggers that count presses. After that many presses the block turns off.
+// Numbers too big for one counter use a chain of counters: when counter 1 reaches the 32-bit
+// maximum it resets to 0 and counter 2 goes up by 1, and so on (up to 16 counters).
 //
-// Two halves:
-//   1. Typing: GD text fields only accept the characters on their allow list, so
-//      you type a short code (backslash + e0, w, ...) and the mod swaps in the
-//      real UTF-8 symbol.
-//   2. Showing: not done in v0.1.1. Swapping the label font crashed GD on
-//      startup (see README), so symbols typed here are not drawn by GD's fonts yet.
+// NOTE: written without a Windows GD to test in. Check the object IDs in plan.hpp in the editor.
 
 #include <Geode/Geode.hpp>
-#include <Geode/modify/CCTextInputNode.hpp>
+#include <Geode/modify/EditorUI.hpp>
 
-#include <cstdint>
-#include <cstring>
-#include <filesystem>
-#include <string>
+#include "plan.hpp"
 
 using namespace geode::prelude;
 
-namespace sc {
+class LimitPopup : public geode::Popup {
+protected:
+	TextInput* m_input = nullptr;
+	CCLabelBMFont* m_info = nullptr;
+	EditorUI* m_ui = nullptr;
 
-	struct Code {
-		char const* name;
-		char const* glyphs;
-	};
+	bool init(EditorUI* ui) {
+		if (!Popup::init(340.f, 220.f)) return false;
+		m_ui = ui;
+		this->setTitle("Press Limit");
 
-	// Typed as <prefix><name>, e.g. \e0 or \w. No name is the start of another
-	// name, so a code is replaced the moment its last character is typed.
-	static constexpr Code kCodes[] = {
-		{"e0", "ε₀"},
-		{"eps0", "ε₀"},
-		{"a0", "ℵ₀"},
-		{"aleph0", "ℵ₀"},
-		{"w", "ω"},
-		{"W", "Ω"},
-		{"alpha", "α"},
-		{"beta", "β"},
-		{"gamma", "γ"},
-		{"delta", "δ"},
-		{"theta", "θ"},
-		{"lambda", "λ"},
-		{"mu", "μ"},
-		{"pi", "π"},
-		{"sigma", "σ"},
-		{"phi", "φ"},
-		{"inf", "∞"},
-	};
+		auto hint = CCLabelBMFont::create("Examples: 100  E_0  l_w  a_n  2^^5  3^^^3", "chatFont.fnt");
+		hint->setScale(.8f);
+		m_mainLayer->addChildAtPosition(hint, Anchor::Center, ccp(0, 55));
 
-	// Replaces every <prefix><code> in `in`. `changed` says whether anything was replaced.
-	inline std::string replaceCodes(std::string const& in, std::string const& prefix, bool& changed) {
-		changed = false;
-		if (prefix.empty()) return in;
+		m_input = TextInput::create(260.f, "How many presses?");
+		m_input->setMaxCharCount(60);
+		m_input->setFilter("0123456789+*^()_ EeLlWwAaNnOo");
+		m_mainLayer->addChildAtPosition(m_input, Anchor::Center, ccp(0, 20));
 
-		std::string out;
-		out.reserve(in.size());
-		size_t i = 0;
-		while (i < in.size()) {
-			if (in.compare(i, prefix.size(), prefix) == 0) {
-				bool matched = false;
-				for (auto const& code : kCodes) {
-					size_t n = std::strlen(code.name);
-					if (in.compare(i + prefix.size(), n, code.name) == 0) {
-						out += code.glyphs;
-						i += prefix.size() + n;
-						matched = true;
-						changed = true;
-						break;
-					}
-				}
-				if (matched) continue;
-			}
-			out += in[i++];
-		}
-		return out;
+		m_info = CCLabelBMFont::create("", "chatFont.fnt");
+		m_info->setScale(.7f);
+		m_mainLayer->addChildAtPosition(m_info, Anchor::Center, ccp(0, -20));
+
+		auto spr = ButtonSprite::create("Make it");
+		auto btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCObject*) { this->make(); });
+		m_buttonMenu->addChildAtPosition(btn, Anchor::Bottom, ccp(0, 35));
+		return true;
 	}
 
-	// Keep in sync with CODEPOINTS in tools/make_font.py.
-	inline bool isSpecialCodepoint(uint32_t cp) {
-		return (cp >= 0x391 && cp <= 0x3A9)       // capital Greek
-			|| (cp >= 0x3B1 && cp <= 0x3C9)       // lowercase Greek
-			|| (cp >= 0x2080 && cp <= 0x2089)     // subscript digits
-			|| cp == 0x2135                       // aleph
-			|| cp == 0x221E;                      // infinity
+	void make() {
+		std::string text = m_input->getString();
+		pl::Parser parser(text);
+		pl::Num n;
+		std::string err;
+		if (!parser.parse(n, err)) {
+			m_info->setString(err.c_str());
+			return;
+		}
+		auto digits = pl::toDigits(n);
+		pl::Ids ids;
+		auto editor = m_ui->m_editorLayer;
+		auto layer = editor->m_objectLayer;
+		auto win = CCDirector::get()->getWinSize();
+		float scale = layer->getScale() != 0.f ? layer->getScale() : 1.f;
+		float x = (win.width / 2 - layer->getPositionX()) / scale;
+		float y = (win.height / 2 - layer->getPositionY()) / scale;
+		auto plan = pl::build(digits, ids, x, y);
+		if (!plan.error.empty()) {
+			m_info->setString(plan.error.c_str());
+			return;
+		}
+		auto objs = editor->createObjectsFromString(plan.objects, true, true);
+		if (objs) m_ui->selectObjects(objs, true);
+		if (digits.infinite) {
+			FLAlertLayer::create(
+				"Too big",
+				"That number is bigger than 16 counters can hold, so it can never really be reached. "
+				"I made the biggest chain I can: the block will practically never disappear.",
+				"OK"
+			)->show();
+		}
+		this->onClose(nullptr);
 	}
 
-	// True if the UTF-8 string contains a symbol our font provides. Cheap: ASCII is skipped byte by byte.
-	inline bool hasSpecial(char const* s) {
-		if (!s) return false;
-		auto p = reinterpret_cast<unsigned char const*>(s);
-		while (*p) {
-			if (*p < 0x80) {
-				++p;
-				continue;
-			}
-			uint32_t cp = 0;
-			int len = 1;
-			if ((*p & 0xE0) == 0xC0) { cp = *p & 0x1F; len = 2; }
-			else if ((*p & 0xF0) == 0xE0) { cp = *p & 0x0F; len = 3; }
-			else if ((*p & 0xF8) == 0xF0) { cp = *p & 0x07; len = 4; }
-			else { ++p; continue; }
-
-			int i = 1;
-			for (; i < len && (p[i] & 0xC0) == 0x80; ++i) {
-				cp = (cp << 6) | (p[i] & 0x3F);
-			}
-			if (i == len && isSpecialCodepoint(cp)) return true;
-			p += i;
+public:
+	static LimitPopup* create(EditorUI* ui) {
+		auto r = new LimitPopup();
+		if (r->init(ui)) {
+			r->autorelease();
+			return r;
 		}
-		return false;
+		delete r;
+		return nullptr;
 	}
+};
 
-	// Path of the bundled font, or empty if it could not be found.
-	inline std::string const& fontPath() {
-		static std::string path = [] {
-			auto mod = Mod::get();
-			auto dir = mod->getResourcesDir();
-			std::error_code ec;
-			// Depending on how the package lays resources out, the file is either
-			// directly in the resources folder or in a folder named after the mod id.
-			std::string id = std::string(mod->getID());
-			for (auto const& p : {dir / "specialFont.fnt", dir / id / "specialFont.fnt"}) {
-				if (std::filesystem::exists(p, ec)) return p.string();
-			}
-			log::warn("specialFont.fnt not found under {}", dir.string());
-			return std::string();
-		}();
-		return path;
-	}
-
-} // namespace sc
-
-// ---------------------------------------------------------------- typing ----
-
-class $modify(SCTextInput, CCTextInputNode) {
-	bool onTextFieldInsertText(CCTextFieldTTF* sender, char const* text, int len, enumKeyCodes key) {
-		auto mod = Mod::get();
-		if (!text || len <= 0 || !mod->getSettingValue<bool>("enable-codes")) {
-			return CCTextInputNode::onTextFieldInsertText(sender, text, len, key);
-		}
-		std::string prefix = mod->getSettingValue<std::string>("prefix");
-		if (prefix.empty()) {
-			return CCTextInputNode::onTextFieldInsertText(sender, text, len, key);
-		}
-
-		// 1. A single keystroke that completes a code: put the symbol in ourselves.
-		//    Pastes (len > 1) skip this, since rewriting the whole field would move
-		//    the text around. Codes in pasted text are not converted.
-		if (len == 1 && m_textField && m_textField->m_pInputText) {
-			std::string typed(text, static_cast<size_t>(len));
-			std::string combined = std::string(m_textField->m_pInputText->c_str()) + typed;
-			bool changed = false;
-			std::string replaced = sc::replaceCodes(combined, prefix, changed);
-			if (changed) {
-				m_textField->setString(replaced.c_str());
-				this->updateLabel(replaced);
-				if (m_delegate) m_delegate->textChanged(this);
-				return true; // handled: the field must not insert the raw characters as well
-			}
-		}
-
-		// 2. Many text fields have an allow list that has no backslash. In fields that
-		//    clearly take text (the list contains letters), let the prefix through.
-		std::string allowed = m_allowedChars;
-		if (!allowed.empty() && allowed.find('e') != std::string::npos) {
-			std::string widened = allowed;
-			for (char c : prefix) {
-				if (widened.find(c) == std::string::npos) widened += c;
-			}
-			if (widened != allowed) {
-				m_allowedChars = widened;
-				bool result = CCTextInputNode::onTextFieldInsertText(sender, text, len, key);
-				m_allowedChars = allowed;
-				return result;
-			}
-		}
-
-		return CCTextInputNode::onTextFieldInsertText(sender, text, len, key);
+class $modify(LimitEditorUI, EditorUI) {
+	bool init(LevelEditorLayer* layer) {
+		if (!EditorUI::init(layer)) return false;
+		auto menu = CCMenu::create();
+		menu->setID("press-limit-menu"_spr);
+		auto spr = ButtonSprite::create("Limit", 40, true, "bigFont.fnt", "GJ_button_04.png", 30.f, .6f);
+		auto btn = CCMenuItemExt::createSpriteExtra(spr, [this](CCObject*) {
+			if (auto p = LimitPopup::create(this)) p->show();
+		});
+		menu->addChild(btn);
+		auto win = CCDirector::get()->getWinSize();
+		menu->setPosition(ccp(win.width - 50.f, win.height - 60.f));
+		this->addChild(menu, 100);
+		return true;
 	}
 };

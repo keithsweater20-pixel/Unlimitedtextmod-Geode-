@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(SpecialCharacters VERSION 0.1.0)
+project(PressLimit VERSION 0.1.0)
 
 add_library(${PROJECT_NAME} SHARED main.cpp)
 
