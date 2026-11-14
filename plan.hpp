@@ -147,7 +147,7 @@ inline Num nPow(Num const& a, Num const& e) {
 }
 
 // a (n up-arrows) b  :  n=1 is a^b, n=2 is a^^b (a tower of b copies of a), and so on
-inline Num hyper(Num const& a, int n, Num const& b) {
+inline Num knuthOp(Num const& a, int n, Num const& b) {
 	if (n <= 1) return nPow(a, b);
 	if (isVal(b, 0)) return smallNum(1);
 	if (isVal(a, 1)) return smallNum(1);
@@ -161,7 +161,7 @@ inline Num hyper(Num const& a, int n, Num const& b) {
 	if (!toU64(b.v, count) || count > 100000) return infinite();
 	Num r = a;
 	for (uint64_t i = 1; i < count; ++i) {
-		r = hyper(a, n - 1, r);
+		r = knuthOp(a, n - 1, r);
 		if (r.inf) return r;
 	}
 	return r;
@@ -230,7 +230,7 @@ private:
 		}
 		if (arrows == 0 || !ok_) return base;
 		Num top = power(); // right associative
-		return hyper(base, arrows, top);
+		return knuthOp(base, arrows, top);
 	}
 	Num atom() {
 		skip();
